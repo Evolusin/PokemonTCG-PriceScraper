@@ -76,7 +76,14 @@ class TO_JSON:
         for file in os.listdir("generated_files"):
             if file.endswith(".json"):
                 os.remove(os.path.join("generated_files", file))
-
+    def add_date_to_json(self):
+        # add date to all json dictionaries
+        with open(self.name, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            for x in data:
+                x["date"] = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
+        with open(self.name, "w", encoding="utf-8") as file:
+            json.dump(data, file, indent=4, ensure_ascii=False)
 
 def get_all_items(url):
     page = requests.get(url)
@@ -117,3 +124,4 @@ def get_all_pages():
 
 saver_json = TO_JSON()
 get_all_pages()
+saver_json.add_date_to_json()
