@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-class Product:
+class Producter:
     def __init__(self, title, href):
         self.title = title
         self.href = href
@@ -45,7 +45,8 @@ class Product:
                 # clear all non ascii characters
                 self.price = self.price.encode("ascii", "ignore").decode()
                 break
-
+    def return_json(self):
+        return self.__dict__
 
 class TO_JSON:
     def __init__(self):
@@ -58,9 +59,17 @@ class TO_JSON:
 
 
     def save(self, product):
-        # save product in json file
-        with open(self.name, "a", encoding="utf-8") as file:
-            json.dump(product.__dict__, file, indent=4, ensure_ascii=False)
+        if not os.path.exists(self.name):
+            with open(self.name, "w", encoding="utf-8") as file:
+                file.write("[\n")
+                json.dump(product, file, indent=4, ensure_ascii=False)
+                file.write("\n]")
+        else:
+            with open(self.name, "r", encoding="utf-8") as file:
+                data = json.load(file)
+                data.append(product)
+            with open(self.name, "w", encoding="utf-8") as file:
+                json.dump(data, file, indent=4, ensure_ascii=False)
 
     def clear_all_json(self):
         # clear all json files in generated_files folder
@@ -75,9 +84,10 @@ def get_all_items(url):
     # Search for all products by div class
     products = soup.find_all("div", class_="woocommerce-loop-product__title")
     for x in products:
-        product = Product(x.text, x.find("a")["href"])
+        product = Producter(x.text, x.find("a")["href"])
         product.scrap_price()
         # append product to json file
+        product = product.return_json()
         saver_json.save(product)
 
 
