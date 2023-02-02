@@ -1,5 +1,7 @@
 import csv
 import datetime
+import json
+import os
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,16 +15,42 @@ class Product:
     def scrap_price(self):
         page = requests.get(self.href)
         soup = BeautifulSoup(page.content, "html.parser")
-        # Search for bdi tag inside of section class
-        self.price = soup.find("section", class_="elementor-section elementor-top-section elementor-element elementor-element-2bdb3ad elementor-section-boxed elementor-section-height-default elementor-section-height-default").find("bdi").text
-        # strip price from unnecessary characters
-        self.price = self.price.replace("zł", "").replace(" ", "").replace(",", ".")
+        # Search for bdi tag inside of section class but ignore if span class is inside del tag and look for the next bdi tag
+        # iterate over p tag inside of section class
+        rows = soup.find("section", class_="elementor-section elementor-top-section elementor-element elementor-element-2bdb3ad elementor-section-boxed elementor-section-height-default elementor-section-height-default").find_all("p")
+        for x in rows:
+            # get span tag that is not inside del tag
+            if x.find("span", class_="woocommerce-Price-amount amount") != None and x.find("del") == None:
+                # get text from span tag
+                self.price = x.find("span", class_="woocommerce-Price-amount amount").text
+                # clear text from unnecessary characters
+                self.price = self.price.replace("zł", "").replace(" ", "").replace(",", ".")
+                # clear all non ascii characters
+                self.price = self.price.encode("ascii", "ignore").decode()
+                break
+
+class TO_JSON:
+    def __init__(self):
+        # generate json file name with timestamp
+        self.name = "generated_files/products-" + datetime.datetime.now().strftime("%m-%d-%Y-%H") + ".json"
+        self.clear_all_json()
+    def save(self, product):
+        # save product in json file
+        with open(self.name, "a", encoding="utf-8") as file:
+            json.dump(product.__dict__, file, indent=4, ensure_ascii=False)
+    def clear_all_json(self):
+        # clear all json files in generated_files folder
+        for file in os.listdir("generated_files"):
+            if file.endswith(".json"):
+                os.remove(os.path.join("generated_files", file))
+        
             
 class CSV:
     def __init__(self):
         # generate csv file name with timestamp
-        self.name = "products-" + datetime.datetime.now().strftime("%m-%d-%Y-%H") + ".csv"
+        self.name = "generated_files/products-" + datetime.datetime.now().strftime("%m-%d-%Y-%H") + ".csv"
         self.set_header()
+        self.clear_all_csv()
         
     def set_header(self):
         with open(self.name, "w", encoding="utf-8") as file:
@@ -34,6 +62,11 @@ class CSV:
         with open(self.name, "a", encoding="utf-8") as file:
             writer = csv.writer(file)
             writer.writerow([product.title, product.href, product.price])
+    def clear_all_csv(self):
+        # clear all csv files in generated_files folder
+        for file in os.listdir("generated_files"):
+            if file.endswith(".csv"):
+                os.remove(os.path.join("generated_files", file))
             
 
 def get_all_items(url):
@@ -50,6 +83,7 @@ def get_all_items(url):
         product.scrap_price()
         # append product to csv file
         saver.save(product)
+        saver_json.save(product)
         
 def get_all_pages():
     # Get all pages from main page
@@ -70,6 +104,6 @@ def get_all_pages():
     for i in link_list:
         get_all_items(i)
     
-
+saver_json = TO_JSON()
 saver = CSV()
 get_all_pages()
