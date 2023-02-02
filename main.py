@@ -81,7 +81,7 @@ class TO_JSON:
         with open(self.name, "r", encoding="utf-8") as file:
             data = json.load(file)
             for x in data:
-                x["date"] = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
+                x["date"] = datetime.datetime.now().strftime("%m-%d-%Y-%H:%M:%S")
         with open(self.name, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=4, ensure_ascii=False)
 
