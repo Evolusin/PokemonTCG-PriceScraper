@@ -27,40 +27,22 @@ class Producter:
         ).find_all("p")
         # print(rows[0])
         for x in rows:
-            # if del tag is inside then get second bdi tag
-            if x.find("del") != None:
+            del_tag = x.find("del")
+            if del_tag is not None:
                 self.price = x.find_all("bdi")[1].text
-                # clear text from unnecessary characters
-                self.price = (
-                    self.price.replace("zł", "")
-                    .replace(" ", "")
-                    .replace(",", ".")
-                )
-                # clear all non ascii characters
-                self.price = self.price.encode("ascii", "ignore").decode()
             else:
-                # get span tag that is not inside del tag
-                if (
-                    x.find("span", class_="woocommerce-Price-amount amount")
-                    != None
-                    and x.find("del") == None
-                ):  
-                    # if p tag text contains "Poprzednia najniższa cena" then go to next p tag
-                    if "Poprzednia najniższa cena" in x.text:
-                        continue
-                    # get text from span tag
-                    self.price = x.find(
-                        "span", class_="woocommerce-Price-amount amount"
-                    ).text
-                    # clear text from unnecessary characters
-                    self.price = (
-                        self.price.replace("zł", "")
-                        .replace(" ", "")
-                        .replace(",", ".")
-                    )
-                    # clear all non ascii characters
-                    self.price = self.price.encode("ascii", "ignore").decode()
-                    break
+                span_tag = x.find(
+                    "span", class_="woocommerce-Price-amount amount"
+                )
+                if span_tag is not None and del_tag is None:
+                    if "Poprzednia najniższa cena" not in x.text:
+                        self.price = span_tag.text
+                        break
+
+        self.price = (
+            self.price.replace("zł", "").replace(" ", "").replace(",", ".")
+        )
+        self.price = self.price.encode("ascii", "ignore").decode()
 
     def return_json(self):
         return self.__dict__
