@@ -45,8 +45,10 @@ class Producter:
                 # clear all non ascii characters
                 self.price = self.price.encode("ascii", "ignore").decode()
                 break
+
     def return_json(self):
         return self.__dict__
+
 
 class TO_JSON:
     def __init__(self):
@@ -56,7 +58,6 @@ class TO_JSON:
             + datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
             + ".json"
         )
-
 
     def save(self, product):
         if not os.path.exists(self.name):
@@ -76,6 +77,7 @@ class TO_JSON:
         for file in os.listdir("generated_files"):
             if file.endswith(".json"):
                 os.remove(os.path.join("generated_files", file))
+
     def add_date_to_json(self):
         # add date to all json dictionaries
         with open(self.name, "r", encoding="utf-8") as file:
@@ -84,6 +86,7 @@ class TO_JSON:
                 x["date"] = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
         with open(self.name, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=4, ensure_ascii=False)
+
 
 def get_all_items(url):
     page = requests.get(url)
