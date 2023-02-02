@@ -10,9 +10,6 @@ class Product:
         self.title = title
         self.href = href
 
-    def setprice(self, price):
-        self.price = price
-    
     def scrap_price(self):
         page = requests.get(self.href)
         soup = BeautifulSoup(page.content, "html.parser")
@@ -48,7 +45,6 @@ def get_all_items(url):
 
     # Search for all products by div class
     products = soup.find_all("div", class_="woocommerce-loop-product__title")
-    saver = CSV()
     for x in products:
         product = Product(x.text, x.find("a")["href"])
         product.scrap_price()
@@ -60,11 +56,20 @@ def get_all_pages():
     page = requests.get("https://czteryszuflady.pl/sklep/kategorie/pokemon-tcg/page/1/")
     soup = BeautifulSoup(page.content, "html.parser")
     pages = soup.find("ul", class_="page-numbers").find_all("li")
+    link_list = []
+    link_list.append("https://czteryszuflady.pl/sklep/kategorie/pokemon-tcg/page/1/")
     # extract only html links from pages
     for x in pages:
         if x.find("a") != None:
-            print(x.find("a")["href"])
-    # remove diu
+            # append link to list
+            link_list.append(x.find("a")["href"])
+    # remove duplicates from list
+    link_list = list(dict.fromkeys(link_list))
+    
+    # itearate over all pages
+    for i in link_list:
+        get_all_items(i)
+    
 
-
+saver = CSV()
 get_all_pages()
