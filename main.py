@@ -70,12 +70,8 @@ class TO_JSON:
 
 
 def get_all_items(url):
-    # Pobieranie strony
     page = requests.get(url)
-
-    # Tworzenie obiektu BeautifulSoup
     soup = BeautifulSoup(page.content, "html.parser")
-
     # Search for all products by div class
     products = soup.find_all("div", class_="woocommerce-loop-product__title")
     for x in products:
