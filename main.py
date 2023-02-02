@@ -52,7 +52,7 @@ class TO_JSON:
         # generate json file name with timestamp
         self.name = (
             "generated_files/products-"
-            + datetime.datetime.now().strftime("%m-%d-%Y-%H")
+            + datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
             + ".json"
         )
         self.clear_all_json()
