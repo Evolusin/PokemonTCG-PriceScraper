@@ -70,35 +70,6 @@ class TO_JSON:
                 os.remove(os.path.join("generated_files", file))
 
 
-class CSV:
-    def __init__(self):
-        # generate csv file name with timestamp
-        self.name = (
-            "generated_files/products-"
-            + datetime.datetime.now().strftime("%m-%d-%Y-%H")
-            + ".csv"
-        )
-        self.set_header()
-        self.clear_all_csv()
-
-    def set_header(self):
-        with open(self.name, "w", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            writer.writerow(["Title", "Link", "Price"])
-
-    def save(self, product):
-        # save product on new line in csv file
-        with open(self.name, "a", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            writer.writerow([product.title, product.href, product.price])
-
-    def clear_all_csv(self):
-        # clear all csv files in generated_files folder
-        for file in os.listdir("generated_files"):
-            if file.endswith(".csv"):
-                os.remove(os.path.join("generated_files", file))
-
-
 def get_all_items(url):
     # Pobieranie strony
     page = requests.get(url)
@@ -111,8 +82,7 @@ def get_all_items(url):
     for x in products:
         product = Product(x.text, x.find("a")["href"])
         product.scrap_price()
-        # append product to csv file
-        saver.save(product)
+        # append product to json file
         saver_json.save(product)
 
 
@@ -141,5 +111,4 @@ def get_all_pages():
 
 
 saver_json = TO_JSON()
-saver = CSV()
 get_all_pages()
