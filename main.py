@@ -55,7 +55,7 @@ class TO_JSON:
             + datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
             + ".json"
         )
-        self.clear_all_json()
+
 
     def save(self, product):
         # save product in json file
