@@ -15,7 +15,7 @@ class Producter:
         page = requests.get(self.href)
         soup = BeautifulSoup(page.content, "html.parser")
         # Search for bdi tag inside of section class but ignore if span class is inside del tag and look for the next bdi tag
-        # iterate over p tag inside of section class
+        # iterate over p class "price" inside of section class
         rows = soup.find(
             "section",
             class_=(
@@ -25,17 +25,11 @@ class Producter:
                 " elementor-section-height-default"
             ),
         ).find_all("p")
+        # print(rows[0])
         for x in rows:
-            # get span tag that is not inside del tag
-            if (
-                x.find("span", class_="woocommerce-Price-amount amount")
-                != None
-                and x.find("del") == None
-            ):
-                # get text from span tag
-                self.price = x.find(
-                    "span", class_="woocommerce-Price-amount amount"
-                ).text
+            # if del tag is inside then get second bdi tag
+            if x.find("del") != None:
+                self.price = x.find_all("bdi")[1].text
                 # clear text from unnecessary characters
                 self.price = (
                     self.price.replace("zł", "")
@@ -44,7 +38,29 @@ class Producter:
                 )
                 # clear all non ascii characters
                 self.price = self.price.encode("ascii", "ignore").decode()
-                break
+            else:
+                # get span tag that is not inside del tag
+                if (
+                    x.find("span", class_="woocommerce-Price-amount amount")
+                    != None
+                    and x.find("del") == None
+                ):  
+                    # if p tag text contains "Poprzednia najniższa cena" then go to next p tag
+                    if "Poprzednia najniższa cena" in x.text:
+                        continue
+                    # get text from span tag
+                    self.price = x.find(
+                        "span", class_="woocommerce-Price-amount amount"
+                    ).text
+                    # clear text from unnecessary characters
+                    self.price = (
+                        self.price.replace("zł", "")
+                        .replace(" ", "")
+                        .replace(",", ".")
+                    )
+                    # clear all non ascii characters
+                    self.price = self.price.encode("ascii", "ignore").decode()
+                    break
 
     def return_json(self):
         return self.__dict__
